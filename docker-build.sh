@@ -1,0 +1,1 @@
+docker build --no-cache -f src/authorize/Dockerfile . -t authorize

@@ -1,0 +1,8 @@
+.deployment/
+.vs
+Dockerfile
+Dockerfile.*
+docker-compose.yml
+.git
+.gitignore
+*.md

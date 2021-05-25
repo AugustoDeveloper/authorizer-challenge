@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>authorize</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>Authorize</RootNamespace>
+    <RumtimeIdentifiers>linux-x64;osx-64;win10-x64</RumtimeIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\authorizer.domain\Authroizer.Domain.csproj"/>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,7 @@
+{"account": {"active-card": true, "available-limit": 1000}}
+{"transaction": {"merchant": "Vivara", "amount": 1250, "time": "2019-02-13T11:00:00.000Z"}}
+{"transaction": {"merchant": "Samsung", "amount": 2500, "time": "2019-02-13T11:00:01.000Z"}}
+{"transaction": {"merchant": "Nike", "amount": 800, "time": "2019-02-13T11:01:01.000Z"}}
+{"transaction": {"merchant": "Uber", "amount": 80, "time": "2019-02-13T11:01:31.000Z"}}
+{"transaction": {"merchant": "99", "amount": 40, "time": "2019-02-13T11:01:32.000Z"}}
+{"transaction": {"merchant": "Uber", "amount": 80, "time": "2019-02-13T11:01:33.000Z"}}
