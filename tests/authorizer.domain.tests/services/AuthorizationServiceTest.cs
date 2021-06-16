@@ -207,6 +207,111 @@ namespace Authorizer.Domain.Tests.Services
         }
 
         [Fact]
+        [Trait(nameof(IAuthorizationService.Authorize), nameof(IAuthorizationService.Authorize))]
+        public void Given_An_Instance_Calling_Authorize_And_AllowListed_Account_When_There_Is_Same_Transaction_In_Two_Minutes_Interval_Should_Returns_Empty_Violations()
+        {
+            var accountManagerGatewayMock = new Mock<IAccountRepository>();
+            var transactionManagerGatewayMock = new Mock<ITransactionRepository>();
+            
+            accountManagerGatewayMock
+                .Setup(m => m.GetCurrentAccount())
+                .Returns(new Account(true, 100, true))
+                .Verifiable();
+            
+            transactionManagerGatewayMock
+                .Setup(t => t.GetLastTwoMinutesTransactionsFrom(It.IsAny<DateTimeOffset>()))
+                .Returns(new Collection<Transaction>
+                {
+                    new Transaction("apple", 10, DateTimeOffset.UtcNow),
+                    new Transaction("microsoft", 11, DateTimeOffset.UtcNow)
+                });
+
+            var service = new AuthorizationService(transactionManagerGatewayMock.Object, accountManagerGatewayMock.Object);
+            var violations = service.Authorize(new Transaction("apple", 10, DateTimeOffset.UtcNow));
+
+            Assert.Empty(violations);
+            Assert.NotNull(violations.CurrentAccount);
+            Assert.True(violations.CurrentAccount.ActiveCard);
+            Assert.True(violations.CurrentAccount.AllowListed);
+            Assert.Equal<uint>(90, violations.CurrentAccount.AvailableLimit);
+            
+            accountManagerGatewayMock.Verify(m => m.GetCurrentAccount(), Times.Once());
+            transactionManagerGatewayMock.Verify(t => t.GetLastTwoMinutesTransactionsFrom(It.IsAny<DateTimeOffset>()), Times.Never());
+            transactionManagerGatewayMock.Verify(t => t.Add(It.IsAny<Transaction>()), Times.Once());
+        }
+
+        [Fact]
+        [Trait(nameof(IAuthorizationService), nameof(IAuthorizationService.Authorize))]
+        public void Given_An_Instance_Calling_Authorize_And_AllowListed_Account_When_There_Is_Frequency_Transaction_In_Small_Interval_With_Double_Transaction_Should_Returns_Empty_Violations()
+        {
+            var accountManagerGatewayMock = new Mock<IAccountRepository>();
+            var transactionManagerGatewayMock = new Mock<ITransactionRepository>();
+            
+            accountManagerGatewayMock
+                .Setup(m => m.GetCurrentAccount())
+                .Returns(new Account(true, 100, true))
+                .Verifiable();
+            
+            transactionManagerGatewayMock
+                .Setup(t => t.GetLastTwoMinutesTransactionsFrom(It.IsAny<DateTimeOffset>()))
+                .Returns(new Collection<Transaction>
+                {
+                    new Transaction("apple", 10, DateTimeOffset.UtcNow),
+                    new Transaction("microsoft", 10, DateTimeOffset.UtcNow),
+                    new Transaction("amazon", 10, DateTimeOffset.UtcNow),
+                });
+
+            var service = new AuthorizationService(transactionManagerGatewayMock.Object, accountManagerGatewayMock.Object);
+            var violations = service.Authorize(new Transaction("amazon", 10, DateTimeOffset.UtcNow));
+
+            Assert.Empty(violations);
+            Assert.NotNull(violations.CurrentAccount);
+            Assert.True(violations.CurrentAccount.ActiveCard);
+            Assert.True(violations.CurrentAccount.AllowListed);
+            Assert.Equal<uint>(90, violations.CurrentAccount.AvailableLimit);
+            
+            accountManagerGatewayMock.Verify(m => m.GetCurrentAccount(), Times.Once());
+            transactionManagerGatewayMock.Verify(t => t.GetLastTwoMinutesTransactionsFrom(It.IsAny<DateTimeOffset>()), Times.Never());
+            transactionManagerGatewayMock.Verify(t => t.Add(It.IsAny<Transaction>()), Times.Once());
+        }
+
+
+        [Fact]
+        [Trait(nameof(IAuthorizationService), nameof(IAuthorizationService.Authorize))]
+        public void Given_An_Instance_Calling_Authorize_With_AllowListed_Account_When_There_Is_Frequency_Transaction_In_Small_Interval_Should_Returns_Empty_Violations()
+        {
+            var accountManagerGatewayMock = new Mock<IAccountRepository>();
+            var transactionManagerGatewayMock = new Mock<ITransactionRepository>();
+            
+            accountManagerGatewayMock
+                .Setup(m => m.GetCurrentAccount())
+                .Returns(new Account(true, 100, true))
+                .Verifiable();
+            
+            transactionManagerGatewayMock
+                .Setup(t => t.GetLastTwoMinutesTransactionsFrom(It.IsAny<DateTimeOffset>()))
+                .Returns(new Collection<Transaction>
+                {
+                    new Transaction("apple", 10, DateTimeOffset.UtcNow),
+                    new Transaction("microsoft", 10, DateTimeOffset.UtcNow),
+                    new Transaction("amazon", 10, DateTimeOffset.UtcNow),
+                });
+
+            var service = new AuthorizationService(transactionManagerGatewayMock.Object, accountManagerGatewayMock.Object);
+            var violations = service.Authorize(new Transaction("ebay", 10, DateTimeOffset.UtcNow));
+
+            Assert.Empty(violations);
+            Assert.True(violations.CurrentAccount.ActiveCard);
+            Assert.True(violations.CurrentAccount.AllowListed);
+            Assert.Equal<uint>(90, violations.CurrentAccount.AvailableLimit);
+            
+            accountManagerGatewayMock.Verify(m => m.GetCurrentAccount(), Times.Once());
+            transactionManagerGatewayMock.Verify(t => t.GetLastTwoMinutesTransactionsFrom(It.IsAny<DateTimeOffset>()), Times.Never());
+            transactionManagerGatewayMock.Verify(t => t.Add(It.IsAny<Transaction>()), Times.Once());
+        }
+
+
+        [Fact]
         [Trait(nameof(IAuthorizationService), nameof(IAuthorizationService.Authorize))]
         public void Given_An_Instance_Calling_Authorize_When_Transaction_Is_Ok_To_Authorize_Should_Return_Empty_Violation()
         {

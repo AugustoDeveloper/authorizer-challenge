@@ -35,8 +35,12 @@ namespace Authorizer.Domain.Services
             var spec = 
                 new AccountCreatedToAuthorizationSpecification(account, violations)
                 .And(new CardIsActiveToAuthorizationSpecification(account, violations))
-                .And(new AccountHasSufficientLimitToAuthorizationSpecification(account, violations))
-                .And(new NotFrequencyTransactionSpecification(this.transactionRepository, account, violations));
+                .And(new AccountHasSufficientLimitToAuthorizationSpecification(account, violations));
+
+            if (!account?.AllowListed ?? true)
+            {
+                spec = spec.And(new NotFrequencyTransactionSpecification(this.transactionRepository, account, violations));
+            }
                 
             if (spec.IsSatisfiedBy(transaction))
             {

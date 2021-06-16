@@ -14,7 +14,8 @@ namespace Authorize.Extensions
             => new Models.Json.Account
             {
                 ActiveCard = account?.ActiveCard,
-                AvailableLimit = account?.AvailableLimit
+                AvailableLimit = account?.AvailableLimit,
+                AllowListed = account?.AllowListed
             };
         
         /// <summary>
@@ -45,6 +46,9 @@ namespace Authorize.Extensions
         /// <returns></returns>
         public static Authorizer.Domain.Entities.Transaction ToEntity(this Models.Json.Transaction transaction)
             => new Authorizer.Domain.Entities.Transaction(transaction.Merchant, transaction.Amount, transaction.Time);
+
+        public static Authorizer.Domain.Entities.AccountAllowList ToEntity(this Models.Json.AccountAllowList accountAllowList)
+            => new Authorizer.Domain.Entities.AccountAllowList(accountAllowList.Active);
 
     }
 }

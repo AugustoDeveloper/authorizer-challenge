@@ -36,7 +36,8 @@ namespace Authorize.Tests.IO
                     Account = new Account
                     {
                         ActiveCard = true,
-                        AvailableLimit = 40
+                        AvailableLimit = 40,
+                        AllowListed = true
                     },
                     Violations = new string[] { "high-frequency-small-interval" }
                 },
@@ -52,7 +53,7 @@ namespace Authorize.Tests.IO
             operation.WriteAllResults();
 
             var output = "{\"account\":{\"active-card\":true,\"available-limit\":40},\"violations\":[]}"+Environment.NewLine+
-                         "{\"account\":{\"active-card\":true,\"available-limit\":40},\"violations\":[\"high-frequency-small-interval\"]}";
+                         "{\"account\":{\"active-card\":true,\"available-limit\":40,\"allow-listed\":true},\"violations\":[\"high-frequency-small-interval\"]}";
 
             Assert.Equal(output, builder.ToString());
         }

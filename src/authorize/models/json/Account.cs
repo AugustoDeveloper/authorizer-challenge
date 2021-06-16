@@ -20,5 +20,8 @@ namespace Authorize.Models.Json
         /// <value></value>
         [JsonPropertyName("available-limit"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public uint? AvailableLimit {get;set;}
+
+        [JsonPropertyName("allow-listed"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public bool? AllowListed {get;set;}
     }
 }

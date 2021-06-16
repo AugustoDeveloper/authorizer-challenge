@@ -17,6 +17,8 @@ namespace Authorizer.Domain.Entities
         /// <value></value>
         public uint AvailableLimit { get; internal set; }
 
+        public bool? AllowListed { get; internal set; }
+
         /// <summary>
         /// Creates an instance of account information
         /// </summary>
@@ -27,7 +29,7 @@ namespace Authorizer.Domain.Entities
         /// </summary>
         /// <param name="activeCard"></param>
         /// <param name="availableLimit"></param>
-        public Account(bool activeCard, uint availableLimit)
-            => (this.ActiveCard, this.AvailableLimit) = (activeCard, availableLimit);
+        public Account(bool activeCard, uint availableLimit, bool? allowListed = null)
+            => (this.ActiveCard, this.AvailableLimit, this.AllowListed) = (activeCard, availableLimit, allowListed);
     }
 }

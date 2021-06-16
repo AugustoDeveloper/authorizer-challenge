@@ -29,11 +29,14 @@ namespace Authorize.Tests
             var outputMock = new Mock<IOutputOperation>();
             var accountServiceMock = new Mock<IAccountCreationService>();
             var transactionServiceMock = new Mock<IAuthorizationService>();
+            var accountAllowListServiceMock = new Mock<IAccountAllowingListService>();
 
-            Assert.Throws<ArgumentNullException>(() => new AuthorizationProcessor(null,null,null,null));
-            Assert.Throws<ArgumentNullException>(() => new AuthorizationProcessor(inputMock.Object,null,null,null));
-            Assert.Throws<ArgumentNullException>(() => new AuthorizationProcessor(inputMock.Object,outputMock.Object,null,null));
-            Assert.Throws<ArgumentNullException>(() => new AuthorizationProcessor(inputMock.Object,outputMock.Object,accountServiceMock.Object,null));
+            Assert.Throws<ArgumentNullException>(() => new AuthorizationProcessor(null,null,null,null,null));
+            Assert.Throws<ArgumentNullException>(() => new AuthorizationProcessor(inputMock.Object,null,null,null, null));
+            Assert.Throws<ArgumentNullException>(() => new AuthorizationProcessor(inputMock.Object,outputMock.Object,null,null, null));
+            Assert.Throws<ArgumentNullException>(() => new AuthorizationProcessor(inputMock.Object,outputMock.Object,accountServiceMock.Object,null, null));
+            Assert.Throws<ArgumentNullException>(() => new AuthorizationProcessor(inputMock.Object,outputMock.Object,accountServiceMock.Object,transactionServiceMock.Object, null));
+
         }
 
         [Fact]
@@ -45,6 +48,7 @@ namespace Authorize.Tests
             
             var accountService = new AccountCreationService(accountRepository);
             var authorizationService = new AuthorizationService(transactionRepository, accountRepository);
+            var accountAllowingListService = new AccountAllowingListService(accountRepository);
 
             var inputBuilder = new StringBuilder();
             inputBuilder.Append("{\"account\": {\"active-card\": false, \"available-limit\": 750}}");
@@ -57,7 +61,7 @@ namespace Authorize.Tests
             var input = new InputJsonOperation(reader);
             var output = new OutputJsonOperation(writer);
 
-            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService);
+            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService, accountAllowingListService);
             processor.Execute();
 
             var outputText = "{\"account\":{\"active-card\":false,\"available-limit\":750},\"violations\":[]}";
@@ -74,6 +78,7 @@ namespace Authorize.Tests
             
             var accountService = new AccountCreationService(accountRepository);
             var authorizationService = new AuthorizationService(transactionRepository, accountRepository);
+            var accountAllowingListService = new AccountAllowingListService(accountRepository);
 
             var inputBuilder = new StringBuilder();
             inputBuilder.AppendLine("{\"account\": {\"active-card\": false, \"available-limit\": 175}}");
@@ -87,7 +92,7 @@ namespace Authorize.Tests
             var input = new InputJsonOperation(reader);
             var output = new OutputJsonOperation(writer);
 
-            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService);
+            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService, accountAllowingListService);
             processor.Execute();
 
             var outputText = "{\"account\":{\"active-card\":false,\"available-limit\":175},\"violations\":[]}" + Environment.NewLine +
@@ -105,6 +110,7 @@ namespace Authorize.Tests
             
             var accountService = new AccountCreationService(accountRepository);
             var authorizationService = new AuthorizationService(transactionRepository, accountRepository);
+            var accountAllowingListService = new AccountAllowingListService(accountRepository);
 
             var inputBuilder = new StringBuilder();
             inputBuilder.AppendLine("{\"account\": {\"active-card\": true, \"available-limit\": 100}}");
@@ -118,7 +124,7 @@ namespace Authorize.Tests
             var input = new InputJsonOperation(reader);
             var output = new OutputJsonOperation(writer);
 
-            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService);
+            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService, accountAllowingListService);
             processor.Execute();
 
             var outputText = "{\"account\":{\"active-card\":true,\"available-limit\":100},\"violations\":[]}" + Environment.NewLine +
@@ -136,6 +142,7 @@ namespace Authorize.Tests
             
             var accountService = new AccountCreationService(accountRepository);
             var authorizationService = new AuthorizationService(transactionRepository, accountRepository);
+            var accountAllowingListService = new AccountAllowingListService(accountRepository);
 
             var inputBuilder = new StringBuilder();
             inputBuilder.AppendLine("{\"transaction\": {\"merchant\": \"Uber Eats\", \"amount\": 25, \"time\": \"2020-12-01T11:07:00.000Z\"}}");
@@ -150,7 +157,7 @@ namespace Authorize.Tests
             var input = new InputJsonOperation(reader);
             var output = new OutputJsonOperation(writer);
 
-            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService);
+            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService, accountAllowingListService);
             processor.Execute();
 
             var outputText = "{\"account\":{},\"violations\":[\"account-not-initialized\"]}" + Environment.NewLine +
@@ -169,6 +176,7 @@ namespace Authorize.Tests
             
             var accountService = new AccountCreationService(accountRepository);
             var authorizationService = new AuthorizationService(transactionRepository, accountRepository);
+            var accountAllowingListService = new AccountAllowingListService(accountRepository);
 
             var inputBuilder = new StringBuilder();
             inputBuilder.AppendLine("{\"account\": {\"active-card\": false, \"available-limit\": 225}}");
@@ -182,7 +190,7 @@ namespace Authorize.Tests
             var input = new InputJsonOperation(reader);
             var output = new OutputJsonOperation(writer);
 
-            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService);
+            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService, accountAllowingListService);
             processor.Execute();
 
             var outputText = "{\"account\":{\"active-card\":false,\"available-limit\":225},\"violations\":[]}" + Environment.NewLine +
@@ -200,6 +208,7 @@ namespace Authorize.Tests
             
             var accountService = new AccountCreationService(accountRepository);
             var authorizationService = new AuthorizationService(transactionRepository, accountRepository);
+            var accountAllowingListService = new AccountAllowingListService(accountRepository);
 
             var inputBuilder = new StringBuilder();
             inputBuilder.AppendLine("{\"account\": {\"active-card\": true, \"available-limit\": 225}}");
@@ -213,7 +222,7 @@ namespace Authorize.Tests
             var input = new InputJsonOperation(reader);
             var output = new OutputJsonOperation(writer);
 
-            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService);
+            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService, accountAllowingListService);
             processor.Execute();
 
             var outputText = "{\"account\":{\"active-card\":true,\"available-limit\":225},\"violations\":[]}" + Environment.NewLine +
@@ -231,6 +240,7 @@ namespace Authorize.Tests
             
             var accountService = new AccountCreationService(accountRepository);
             var authorizationService = new AuthorizationService(transactionRepository, accountRepository);
+            var accountAllowingListService = new AccountAllowingListService(accountRepository);
 
             var inputBuilder = new StringBuilder();
             inputBuilder.AppendLine("{\"account\": {\"active-card\": true, \"available-limit\": 225}}");
@@ -247,7 +257,7 @@ namespace Authorize.Tests
             var input = new InputJsonOperation(reader);
             var output = new OutputJsonOperation(writer);
 
-            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService);
+            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService, accountAllowingListService);
             processor.Execute();
 
             var outputText = "{\"account\":{\"active-card\":true,\"available-limit\":225},\"violations\":[]}" + Environment.NewLine +
@@ -268,6 +278,7 @@ namespace Authorize.Tests
             
             var accountService = new AccountCreationService(accountRepository);
             var authorizationService = new AuthorizationService(transactionRepository, accountRepository);
+            var accountAllowingListService = new AccountAllowingListService(accountRepository);
 
             var inputBuilder = new StringBuilder();
             inputBuilder.AppendLine("{\"account\": {\"active-card\": true, \"available-limit\": 225}}");
@@ -282,7 +293,7 @@ namespace Authorize.Tests
             var input = new InputJsonOperation(reader);
             var output = new OutputJsonOperation(writer);
 
-            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService);
+            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService, accountAllowingListService);
             processor.Execute();
 
             var outputText = "{\"account\":{\"active-card\":true,\"available-limit\":225},\"violations\":[]}" + Environment.NewLine +
@@ -301,6 +312,7 @@ namespace Authorize.Tests
             
             var accountService = new AccountCreationService(accountRepository);
             var authorizationService = new AuthorizationService(transactionRepository, accountRepository);
+            var accountAllowingListService = new AccountAllowingListService(accountRepository);
 
             var inputBuilder = new StringBuilder();
             inputBuilder.AppendLine("{\"account\": {\"active-card\": true, \"available-limit\": 225}}");
@@ -317,7 +329,7 @@ namespace Authorize.Tests
             var input = new InputJsonOperation(reader);
             var output = new OutputJsonOperation(writer);
 
-            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService);
+            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService, accountAllowingListService);
             processor.Execute();
 
             var outputText = "{\"account\":{\"active-card\":true,\"available-limit\":225},\"violations\":[]}" + Environment.NewLine +
@@ -338,6 +350,7 @@ namespace Authorize.Tests
             
             var accountService = new AccountCreationService(accountRepository);
             var authorizationService = new AuthorizationService(transactionRepository, accountRepository);
+            var accountAllowingListService = new AccountAllowingListService(accountRepository);
 
             var inputBuilder = new StringBuilder();
             inputBuilder.AppendLine("{\"account\": {\"active-card\": true, \"available-limit\": 1000}}");
@@ -354,7 +367,7 @@ namespace Authorize.Tests
             var input = new InputJsonOperation(reader);
             var output = new OutputJsonOperation(writer);
 
-            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService);
+            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService, accountAllowingListService);
             processor.Execute();
 
             var outputText = "{\"account\":{\"active-card\":true,\"available-limit\":1000},\"violations\":[]}" + Environment.NewLine +
@@ -384,6 +397,7 @@ namespace Authorize.Tests
             
             var accountService = new AccountCreationService(accountRepository);
             var authorizationService = new AuthorizationService(transactionRepository, accountRepository);
+            var accountAllowingListService = new AccountAllowingListService(accountRepository);
 
             var inputBuilder = new StringBuilder();
             var outputBuilder = new StringBuilder();
@@ -411,7 +425,7 @@ namespace Authorize.Tests
             var input = new InputJsonOperation(reader);
             var output = new OutputJsonOperation(writer);
 
-            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService);
+            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService, accountAllowingListService);
             processor.Execute();
 
             Assert.Equal(outputExpected, outputBuilder.ToString());
@@ -435,6 +449,7 @@ namespace Authorize.Tests
             
             var accountService = new AccountCreationService(accountRepository);
             var authorizationService = new AuthorizationService(transactionRepository, accountRepository);
+            var accountAllowingListService = new AccountAllowingListService(accountRepository);
 
             var inputBuilder = new StringBuilder();
             var outputBuilder = new StringBuilder();
@@ -462,7 +477,7 @@ namespace Authorize.Tests
             var input = new InputJsonOperation(reader);
             var output = new OutputJsonOperation(writer);
 
-            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService);
+            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService, accountAllowingListService);
             processor.Execute();
 
             Assert.Equal(outputExpected, outputBuilder.ToString());

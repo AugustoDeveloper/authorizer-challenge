@@ -21,10 +21,22 @@ namespace Authorize.Models.Json
         [JsonPropertyName("transaction")]
         public Transaction Transaction { get; set; }
 
+        [JsonPropertyName("allow-list")]
+        public AccountAllowList AllowList { get; set; }
+
         /// <summary>
         /// Validates if this instance is account operation
         /// </summary>
         /// <returns></returns>
-        public bool IsAccountOperation() => Account != null;
+        public OperationKind GetOperationKind()
+        { 
+            if (Account != null)
+                return OperationKind.AccountOperation;
+            if (Transaction != null)
+                return OperationKind.TransactionOperation;
+            
+            //FIXME: Not allow this statement
+            return OperationKind.AllowListOperation;
+        }
     }
 }

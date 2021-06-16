@@ -16,13 +16,14 @@ namespace Authorize
             // Setup service with memory repositories
             var accountService = new AccountCreationService(accountRepository);
             var authorizationService = new AuthorizationService(transactionRepository, accountRepository);
+            var accountAllowingListService = new AccountAllowingListService(accountRepository);
 
             // Setup input with Console container TextWriter and TextReader
             var input = new InputJsonOperation(Console.In);
             var output = new OutputJsonOperation(Console.Out);
 
             // Setup processor with all above setups variables
-            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService);
+            var processor = new AuthorizationProcessor(input, output, accountService, authorizationService, accountAllowingListService);
 
             // Execute authorization process
             processor.Execute();

@@ -23,6 +23,7 @@ namespace Authorize.Tests.IO
             var builder = new StringBuilder();
             
             builder.AppendLine("{\"account\": {\"active-card\": true, \"available-limit\": 100}}");
+            builder.AppendLine("{\"allow-list\": {\"active\": true}}");
             builder.AppendLine("{\"transaction\": {\"merchant\": \"Burger King\", \"amount\": 20, \"time\": \"2019-02-13T11:00:00.000Z\"}}");
 
             var stream = new StringReader(builder.ToString());
@@ -32,13 +33,17 @@ namespace Authorize.Tests.IO
             Assert.True(input.MoveNext(), "First Move Next");
             var accountOperation = input.Read<Operation>();
             Assert.True(input.MoveNext(), "Second Move Next");
+            var allowListOperation = input.Read<Operation>();
+            Assert.True(input.MoveNext(), "Third Move Next");
             var transactionOperation = input.Read<Operation>();
-            Assert.False(input.MoveNext(), "Third Move Next");
+            Assert.False(input.MoveNext(), "Fourth Move Next");
 
             Assert.NotNull(accountOperation);
             Assert.NotNull(accountOperation.Account);
             Assert.True(accountOperation.Account.ActiveCard);
             Assert.Equal<uint>(100, accountOperation.Account.AvailableLimit.Value);
+
+            Assert.True(allowListOperation.AllowList.Active);
 
             Assert.NotNull(transactionOperation);
             Assert.NotNull(transactionOperation.Transaction);

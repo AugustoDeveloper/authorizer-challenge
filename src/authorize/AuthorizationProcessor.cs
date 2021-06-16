@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Authorize.Extensions;
 using Authorize.IO;
@@ -18,6 +19,8 @@ namespace Authorize
         private readonly IOutputOperation output;
         private readonly IAccountCreationService accountCreationService;
         private readonly IAuthorizationService authorizationService;
+        private readonly IAccountAllowingListService accountAllowingListService;
+        private readonly IReadOnlyDictionary<OperationKind, Func<Operation, AccountOperationResult>> operations;
 
         /// <summary>
         /// Create an instance to execute authorization process
@@ -30,12 +33,20 @@ namespace Authorize
             IInputOperation input, 
             IOutputOperation output,
             IAccountCreationService accountCreationService,
-            IAuthorizationService authorizationService)
+            IAuthorizationService authorizationService,
+            IAccountAllowingListService accountAllowingListService)
         {
             this.input = input ?? throw new ArgumentNullException(nameof(input));
             this.output = output ?? throw new ArgumentNullException(nameof(output));
             this.accountCreationService = accountCreationService ?? throw new ArgumentNullException(nameof(accountCreationService));
             this.authorizationService = authorizationService ?? throw new ArgumentNullException(nameof(authorizationService));
+            this.accountAllowingListService = accountAllowingListService ?? throw new ArgumentNullException(nameof(accountAllowingListService));
+            this.operations = new Dictionary<OperationKind, Func<Operation, AccountOperationResult>>
+            {
+                [OperationKind.AccountOperation] = ExecuteCreationAccount,
+                [OperationKind.TransactionOperation] = ExecuteAuthorizationTransaction,
+                [OperationKind.AllowListOperation] = ExecuteAllowList
+            };
         }
 
         /// <summary>
@@ -46,18 +57,11 @@ namespace Authorize
         {
             while (this.input.MoveNext())
             {
-                AccountOperationResult result;
-
                 var operation = this.input.Read<Operation>();
 
-                if (operation.IsAccountOperation())
-                {
-                    result = ExecuteCreationAccount(operation.Account);
-                }
-                else
-                {
-                    result = ExecuteAuthorizationTransaction(operation.Transaction);
-                }
+                var kind = operation.GetOperationKind();
+
+                var result = operations[kind](operation);
 
                 this.output.AppendLine(result);
             }
@@ -70,10 +74,23 @@ namespace Authorize
         /// </summary>
         /// <param name="transaction"></param>
         /// <returns></returns>
-        private AccountOperationResult ExecuteAuthorizationTransaction(Transaction transaction)
+        private AccountOperationResult ExecuteAuthorizationTransaction(Operation operation)
         {
+            var transaction = operation.Transaction;
             var result = new AccountOperationResult();
             var violations = this.authorizationService.Authorize(transaction.ToEntity());
+
+            result.Violations = violations.GetViolationDescriptions().ToArray();
+            result.Account = violations.CurrentAccount.ToModel();
+            
+            return result;
+        }
+
+        private AccountOperationResult ExecuteAllowList(Operation operation)
+        {
+            var allowList = operation.AllowList;
+            var result = new AccountOperationResult();
+            var violations = this.accountAllowingListService.AllowList(allowList.ToEntity());
 
             result.Violations = violations.GetViolationDescriptions().ToArray();
             result.Account = violations.CurrentAccount.ToModel();
@@ -86,8 +103,9 @@ namespace Authorize
         /// </summary>
         /// <param name="account"></param>
         /// <returns></returns>
-        private AccountOperationResult ExecuteCreationAccount(Account account)
+        private AccountOperationResult ExecuteCreationAccount(Operation operation)
         {
+            var account = operation.Account;
             var result = new AccountOperationResult();
             var violations = this.accountCreationService.CreateAccount(account.ToEntity());
 
